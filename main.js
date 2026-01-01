@@ -24,3 +24,4 @@ window.playerData = {
     gems: 0,
     coins: 0
 };
+
