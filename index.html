@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -8,7 +9,7 @@
     <style>
         * { margin: 0; padding: 0; }
         body { 
-            background: #000; 
+            background: #1a1a1a; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
@@ -38,27 +39,47 @@
             }
 
             preload() {
-                // Charge les images depuis assets/images/
-                this.load.image('bg', 'assets/images/background.png');
-                this.load.spritesheet('player', 'assets/images/player.png', { 
-                    frameWidth: 2048/9, 
-                    frameHeight: 2048 
-                });
-                this.load.image('platform', 'assets/images/platform.png');
-                this.load.image('gem', 'assets/images/gem.png');
-                this.load.image('npc', 'assets/images/npc.png');
-                this.load.image('coin', 'assets/images/coin.png');
-                this.load.image('joystick-base', 'assets/images/joystick_base.png');
-                this.load.image('joystick-stick', 'assets/images/joystick_stick.png');
-                this.load.image('button-jump', 'assets/images/button_jump.png');
+                // Créer des graphiques de base
+                this.createPlaceholders();
+            }
+
+            createPlaceholders() {
+                // Player sprite
+                const playerGraphics = this.add.graphics();
+                playerGraphics.fillStyle(0x4A90E2, 1);
+                playerGraphics.fillRect(0, 0, 40, 60);
+                playerGraphics.fillStyle(0x2E5C8A, 1);
+                playerGraphics.fillCircle(20, 15, 15); // Tête
+                playerGraphics.generateTexture('player', 40, 60);
+                playerGraphics.destroy();
+
+                // Gem
+                const gemGraphics = this.add.graphics();
+                gemGraphics.fillStyle(0xFFD700, 1);
+                gemGraphics.fillCircle(10, 10, 10);
+                gemGraphics.fillStyle(0xFFA500, 1);
+                gemGraphics.fillCircle(10, 10, 6);
+                gemGraphics.generateTexture('gem', 20, 20);
+                gemGraphics.destroy();
+
+                // NPC
+                const npcGraphics = this.add.graphics();
+                npcGraphics.fillStyle(0x9B59B6, 1);
+                npcGraphics.fillRect(0, 0, 40, 60);
+                npcGraphics.fillStyle(0x8E44AD, 1);
+                npcGraphics.fillCircle(20, 15, 15);
+                npcGraphics.generateTexture('npc', 40, 60);
+                npcGraphics.destroy();
             }
 
             create() {
                 const worldWidth = 2880;
                 const worldHeight = 480;
 
-                // Background
-                this.add.tileSprite(0, 0, worldWidth, worldHeight, 'bg').setOrigin(0, 0);
+                // Background gradient
+                const bg = this.add.graphics();
+                bg.fillGradientStyle(0x87CEEB, 0x87CEEB, 0x98D8E8, 0x98D8E8, 1);
+                bg.fillRect(0, 0, worldWidth, worldHeight);
 
                 // Physics
                 this.physics.world.bounds.width = worldWidth;
@@ -68,7 +89,7 @@
                 this.platforms = this.physics.add.staticGroup();
                 
                 // Ground
-                const ground = this.add.rectangle(worldWidth/2, 460, worldWidth, 40, 0x2a2a2a);
+                const ground = this.add.rectangle(worldWidth/2, 460, worldWidth, 40, 0x8B4513);
                 this.physics.add.existing(ground, true);
                 this.platforms.add(ground);
 
@@ -86,7 +107,7 @@
                 ];
 
                 platformsData.forEach(p => {
-                    const platform = this.add.rectangle(p.x, p.y, p.w, p.h, 0x8B4513);
+                    const platform = this.add.rectangle(p.x, p.y, p.w, p.h, 0xA0522D);
                     this.physics.add.existing(platform, true);
                     this.platforms.add(platform);
                 });
@@ -94,23 +115,7 @@
                 // Player
                 this.player = this.physics.add.sprite(100, 300, 'player');
                 this.player.setCollideWorldBounds(true);
-                this.player.setScale(0.3);
                 this.player.body.setGravityY(800);
-
-                // Animations
-                this.anims.create({
-                    key: 'idle',
-                    frames: this.anims.generateFrameNumbers('player', { start: 0, end: 0 }),
-                    frameRate: 10,
-                    repeat: -1
-                });
-
-                this.anims.create({
-                    key: 'walk',
-                    frames: this.anims.generateFrameNumbers('player', { start: 0, end: 8 }),
-                    frameRate: 10,
-                    repeat: -1
-                });
 
                 // Gems
                 this.gems = this.physics.add.group();
@@ -118,7 +123,6 @@
                     const x = Phaser.Math.Between(90, 2700);
                     const y = Phaser.Math.Between(50, 350);
                     const gem = this.gems.create(x, y, 'gem');
-                    gem.setScale(0.15);
                     gem.body.setAllowGravity(false);
                 }
 
@@ -127,7 +131,6 @@
                 const npcPositions = [500, 900, 1400, 1800, 2300];
                 npcPositions.forEach(x => {
                     const npc = this.npcs.create(x, 380, 'npc');
-                    npc.setScale(0.3);
                     npc.npcType = Math.random() > 0.5 ? 'gem' : 'shop';
                 });
 
@@ -142,10 +145,11 @@
 
                 // UI fixée
                 this.uiText = this.add.text(16, 16, '', {
-                    fontSize: '24px',
+                    fontSize: '28px',
                     fill: '#fff',
-                    backgroundColor: '#000',
-                    padding: { x: 10, y: 5 }
+                    fontFamily: 'Arial',
+                    stroke: '#000',
+                    strokeThickness: 4
                 }).setScrollFactor(0).setDepth(100);
 
                 this.updateUI();
@@ -215,8 +219,10 @@
                     .setScrollFactor(0).setDepth(100).setInteractive();
                 
                 this.add.text(width - 100, height - 100, 'JUMP', {
-                    fontSize: '16px',
-                    fill: '#fff'
+                    fontSize: '18px',
+                    fill: '#fff',
+                    fontFamily: 'Arial',
+                    fontStyle: 'bold'
                 }).setOrigin(0.5).setScrollFactor(0).setDepth(101);
 
                 this.jumpBtn.on('pointerdown', () => {
@@ -233,7 +239,6 @@
             }
 
             interactNPC(player, npc) {
-                // Simple interaction au contact
                 if (!npc.interacted) {
                     npc.interacted = true;
                     if (npc.npcType === 'gem') {
@@ -254,24 +259,12 @@
                 // Movement
                 if (this.joyActive) {
                     this.player.setVelocityX(this.joyVector.x * 200);
-                    
-                    if (Math.abs(this.joyVector.x) > 0.1) {
-                        this.player.anims.play('walk', true);
-                        this.player.setFlipX(this.joyVector.x < 0);
-                    } else {
-                        this.player.anims.play('idle', true);
-                    }
                 } else if (this.cursors.left.isDown) {
                     this.player.setVelocityX(-200);
-                    this.player.anims.play('walk', true);
-                    this.player.setFlipX(true);
                 } else if (this.cursors.right.isDown) {
                     this.player.setVelocityX(200);
-                    this.player.anims.play('walk', true);
-                    this.player.setFlipX(false);
                 } else {
                     this.player.setVelocityX(0);
-                    this.player.anims.play('idle', true);
                 }
 
                 // Jump keyboard
