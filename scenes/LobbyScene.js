@@ -11,8 +11,11 @@ export default class LobbyScene extends Phaser.Scene {
 
     create() {
         this.add.image(400, 300, 'background');
-        this.add.image(400, 200, 'player').setScale(0.5);
 
+        // Avatar joueur
+        this.add.image(400, 200, 'player').setScale(0.05);
+
+        // Bouton Jouer
         const playButton = this.add.image(400, 400, 'button').setInteractive();
         playButton.on('pointerdown', () => {
             this.scene.start('GameScene');
@@ -22,3 +25,4 @@ export default class LobbyScene extends Phaser.Scene {
         this.add.text(370, 390, 'Jouer', { fontSize: '24px', fill: '#fff' });
     }
 }
+
